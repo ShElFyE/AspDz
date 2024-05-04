@@ -6,29 +6,35 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+var schools = new List<School>();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateTime.Now.AddDays(index),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+app.MapGet("/schools", () => schools);
+app.MapGet("/schools/{id}", (int id) => schools.FirstOrDefault(h => h.Id == id));
+app.MapPost("/schools", (School school) => schools.Add(school));
+app.MapPut("/schools", (School school) => {
+    var index = schools.FindIndex(h => h.Id == school.Id);
+    if (index < 0)
+    {
+        throw new Exception("Not found");
+    }
+    schools[index] = school;
 });
+app.MapDelete("/schools/{id}", (int id) => {
+    var index = schools.FindIndex(h => h.Id == id);
+    if (index < 0) throw new Exception("Not found");
+    schools.RemoveAt(index);
+});
+
 
 app.Run();
 
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
+
+
+public class School
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
 }
