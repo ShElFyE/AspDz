@@ -6,6 +6,15 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
+
+// Настройка CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowOrigin",
+        builder => builder.WithOrigins("http://localhost:3001").AllowAnyMethod().AllowAnyHeader());
+});
+
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -36,6 +45,8 @@ app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI();
 //app.UseHttpsRedirection();
+
+
 
 app.MapGet("/login", [AllowAnonymous] async (HttpContext context,
     ITokenService tokenService, IUserRepository userRepository) => {
@@ -70,6 +81,21 @@ app.MapDelete("/schools/{id}", (int id) => {
     schools.RemoveAt(index);
 });
 
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+
+app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseCors("AllowOrigin");
+
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();
 
